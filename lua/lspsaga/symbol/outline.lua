@@ -490,7 +490,6 @@ function ot:auto_close()
     callback = function()
       if api.nvim_get_current_win() == self.winid and #api.nvim_list_wins() == 1 then
         api.nvim_win_set_buf(self.winid, api.nvim_create_buf(true, true))
-        api.nvim_del_augroup_by_id(group)
         clean_ctx()
       end
     end,
