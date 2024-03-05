@@ -485,11 +485,26 @@ function ot:float_preview()
 end
 
 function ot:auto_close()
-  api.nvim_create_autocmd('WinEnter', {
+  api.nvim_create_autocmd('QuitPre', {
     group = group,
     callback = function()
-      if api.nvim_get_current_win() == self.winid and #api.nvim_list_wins() == 1 then
-        api.nvim_win_set_buf(self.winid, api.nvim_create_buf(true, true))
+      -- NOTE: condition checking if outline window is sometimes not met
+      -- I think it has to do with #api.nvim_list_wins() ~= 1 somehow at time of autocmd
+      -- firing, maybe because of a plugin like fidget or some odd ordering/side effects of autocmd events
+      -- also could be more about WinEnter not being best event; maybe preview window in the list
+      -- also breaks condition at time of check
+      local win_list = api.nvim_list_wins()
+      local outline_win_exists
+      for _, w in ipairs(win_list) do
+        if w == self.winid then
+          outline_win_exists = true
+          break
+        end
+      end
+      -- check that outline win still exists in win list AND len of win list minus the outline win leaves only 1 window
+      -- this means that after quitting curr win, outline window would be the only one left
+      if outline_win_exists == true and #win_list - 1 == 1 then
+        api.nvim_win_set_buf(self.winid, api.nvim_create_buf(false, true))
         clean_ctx()
       end
     end,
