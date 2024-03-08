@@ -493,6 +493,16 @@ function ot:auto_close()
       -- firing, maybe because of a plugin like fidget or some odd ordering/side effects of autocmd events
       -- also could be more about WinEnter not being best event; maybe preview window in the list
       -- also breaks condition at time of check
+
+      -- TODO: may also have to consider floating outline case?
+
+      print('Starting check')
+      print(vim.inspect(api.nvim_list_wins()))
+      print(#api.nvim_list_wins())
+
+      -- TODO: still running into the same error every now and then; difficult to reproduce reliably
+      -- maybe resort to a check in the preview window creation? that sounds wrong
+      -- consider WinClosed
       local win_list = api.nvim_list_wins()
       local outline_win_exists
       for _, w in ipairs(win_list) do
@@ -504,8 +514,17 @@ function ot:auto_close()
       -- check that outline win still exists in win list AND len of win list minus the outline win leaves only 1 window
       -- this means that after quitting curr win, outline window would be the only one left
       if outline_win_exists == true and #win_list - 1 == 1 then
+        print('Autoclosing')
+        print(vim.inspect(api.nvim_list_wins()))
+        print(#api.nvim_list_wins())
+
         api.nvim_win_set_buf(self.winid, api.nvim_create_buf(false, true))
         clean_ctx()
+      -- end
+      else
+        print('No autoclosing')
+        print(vim.inspect(api.nvim_list_wins()))
+        print(#api.nvim_list_wins())
       end
     end,
     desc = '[Lspsaga] auto close the outline window when is last',
